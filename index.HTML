@@ -1,0 +1,195 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ST | Главная</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+      background-image: url('assets/images/CG.png'); /* Локальный путь к фото */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-color: #333; /* Запасной цвет, если изображение не загрузится */
+    }
+    body.light {
+      background-color: rgba(240, 240, 240, 0.8);
+      color: #333;
+    }
+    body.dark {
+      background-color: rgba(26, 26, 26, 0.8);
+      color: #ddd;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    nav {
+      margin-top: 15px;
+    }
+    nav a {
+      margin: 0 15px;
+      padding: 10px 20px;
+      color: inherit;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 25px;
+      transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+      display: inline-block;
+    }
+    body.light nav a {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #333;
+    }
+    body.dark nav a {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ddd;
+    }
+    nav a:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(76, 175, 80, 0.7);
+      background-color: #4caf50;
+      color: white;
+    }
+    main {
+      text-align: center;
+      padding: 40px 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    main h2 {
+      font-size: 2.2em;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    main p {
+      font-size: 1.2em;
+      margin: 0 auto;
+      max-width: 600px;
+      line-height: 1.6;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    body.light button {
+      background-color: #4caf50;
+      color: white;
+    }
+    body.light button:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+    }
+    body.dark button {
+      background-color: #66bb6a;
+      color: #1a1a1a;
+    }
+    body.dark button:hover {
+      background-color: #5da962;
+      transform: scale(1.05);
+    }
+    footer {
+      text-align: center;
+      padding: 10px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+    }
+    #error-message {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff4444;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div id="error-message">Ошибка: Не удалось загрузить CG.png. Проверь путь или файл!</div>
+  <header>
+    <h1>ST | Главная</h1>
+    <div>
+      <button id="theme-toggle">Тёмная тема</button>
+      <nav>
+        <a href="index.html">Главная</a>
+        <a href="site/info.html">Инфо</a>
+        <a href="site/advice.html">Советы</a>
+        <a href="site/test.html">Тест</a>
+        <a href="site/game.html">Игра</a>
+        <a href="site/infographic.html">Инфографика</a>
+        <a href="site/break.html">Перерыв</a>
+        <a href="site/profile.html" id="profile-link">Профиль</a>
+        <a href="site/login.html" id="login-link">Войти</a>
+        <a href="site/register.html" id="register-link">Регистрация</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <h2>Добро пожаловать!</h2>
+    <p>Исследуй сайт и заботься о своём здоровье.</p>
+  </main>
+  <footer>© 2025 ST. Все права защищены. Тахир</footer>
+  <script>
+    // Проверка загрузки изображения
+    const img = new Image();
+    img.onload = () => {
+      document.body.style.backgroundImage = `url('assets/images/CG.png')`; // Устанавливаем фон только если загрузка успешна
+    };
+    img.onerror = () => {
+      document.getElementById('error-message').style.display = 'block';
+      console.log('Ошибка загрузки CG.png. Проверь путь или файл.');
+    };
+    img.src = 'assets/images/CG.png';
+
+    // Theme toggle
+    const toggle = document.getElementById('theme-toggle');
+    let theme = localStorage.getItem('theme') || 'light';
+    document.body.classList.add(theme);
+    toggle.textContent = theme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    toggle.onclick = () => {
+      theme = theme === 'light' ? 'dark' : 'light';
+      document.body.classList.remove('light', 'dark');
+      document.body.classList.add(theme);
+      localStorage.setItem('theme', theme);
+      toggle.textContent = theme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    };
+
+    // Проверка авторизации
+    const curr = localStorage.getItem('currentUser');
+    if (!curr) {
+      location = 'site/login.html';
+    } else {
+      document.getElementById('login-link').style.display = 'none';
+      document.getElementById('register-link').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
