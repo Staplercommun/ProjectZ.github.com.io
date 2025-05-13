@@ -1,0 +1,388 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тест</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light {
+      background-color: #ffffff;
+      color: #000000;
+    }
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ffffff;
+    }
+    header {
+      padding: 10px;
+      text-align: center;
+    }
+    nav a {
+      margin: 0 10px;
+      color: inherit;
+    }
+    .main-container {
+      padding: 20px;
+      text-align: center;
+    }
+    .test-progress {
+      width: 100%;
+      background-color: #ddd;
+      height: 10px;
+      margin: 10px 0;
+    }
+    #progress-bar {
+      height: 100%;
+      background-color: #4caf50;
+      transition: width 0.3s;
+    }
+    .question label {
+      display: block;
+      margin: 5px 0;
+    }
+    .test-result {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    .notification-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+    }
+    .notification {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Тест на геймерское здоровье</h1>
+    <div>
+      <button id="theme-toggle">Тёмная тема</button>
+      <nav>
+        <a href="../index.html">Главная</a>
+        <a href="info.html">Инфо</a>
+        <a href="advice.html">Советы</a>
+        <a href="test.html">Тест</a>
+        <a href="game.html">Игра</a>
+        <a href="infographic.html">Инфографика</a>
+        <a href="break.html">Перерыв</a>
+        <a href="profile.html" id="profile-link">Профиль</a>
+        <a href="login.html" id="login-link">Войти</a>
+        <a href="register.html" id="register-link">Регистрация</a>
+      </nav>
+    </div>
+  </header>
+  <main class="main-container test-container">
+    <h2>Проверь своё геймерское здоровье!</h2>
+    <p>Ответь на вопросы, чтобы узнать, как игры влияют на тебя. Будет интересно!</p>
+    <div class="test-progress"><div id="progress-bar" style="width: 0%"></div></div>
+    <div id="questions"></div>
+    <button id="confirm-answer" style="display: none;">Подтвердить 🚀</button>
+    <button id="submit-test" style="display: none;">Узнать результат</button>
+    <div id="result" class="test-result" style="display: none;"></div>
+  </main>
+  <div class="notification-container" id="notification-container"></div>
+  <footer>© 2025 ST. Все права защищены. Тахир</footer>
+  <script>
+    // Theme & Nav
+    const toggle = document.getElementById('theme-toggle');
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    document.body.classList.add(currentTheme);
+    toggle.textContent = currentTheme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    toggle.onclick = () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.body.classList.remove('light', 'dark');
+      document.body.classList.add(currentTheme);
+      localStorage.setItem('theme', currentTheme);
+      toggle.textContent = currentTheme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    };
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      document.getElementById('login-link').style.display = 'none';
+      document.getElementById('register-link').style.display = 'none';
+	};
+
+    // Проверка авторизации
+    const curr = localStorage.getItem('currentUser');
+    if (!curr) {
+      location = 'login.html';
+    } else {
+      document.getElementById('login-link').style.display = 'none';
+      document.getElementById('register-link').style.display = 'none';
+    }
+    // Notification system
+    const adviceList = [
+      'Делайте перерывы каждый час игры для разминки и отдыха.',
+      'Выполняйте гимнастику для глаз: смотрите вдаль, делайте круговые движения.',
+      'Ограничьте время игры до 1–2 часов в день.',
+      'Настройте эргономику: монитор на уровне глаз, кресло с поддержкой спины.',
+      'Обеспечьте равномерное освещение без бликов.',
+      'Добавьте физическую активность: прогулки и упражнения укрепляют здоровье.'
+    ];
+    function showNotification(message) {
+      if (localStorage.getItem('notifications') === 'disabled') return;
+      const container = document.getElementById('notification-container');
+      const notif = document.createElement('div');
+      notif.className = 'notification';
+      notif.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()">✖</button>`;
+      container.appendChild(notif);
+      setTimeout(() => notif.remove(), 5000);
+    }
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.email === currentUser);
+    if (user && user.subscribed) {
+      setInterval(() => {
+        const randomAdvice = adviceList[Math.floor(Math.random() * adviceList.length)];
+        showNotification(`Совет: ${randomAdvice}`);
+      }, 60000);
+    }
+    setTimeout(() => showNotification('Новость: Скоро новый ивент!'), 5000);
+    setTimeout(() => showNotification('ЛС: Привет, как дела?'), 10000);
+    // Word lists for Q15
+    const fatigueWords = [
+      'устал', 'выдохся', 'замучился', 'утомился', 'измучился', 'выжат', 'разбит', 'убит', 'напряг', 'стресс',
+      'перегруз', 'тяжело', 'хреново', 'похер', 'заебался', 'надоело', 'задолбался', 'усрался', 'выгорел', 'пиздец',
+      'грусть', 'тоска', 'депрессия', 'апатия', 'лень', 'без сил', 'слабость', 'сонно', 'зевота', 'торможу',
+      'болит', 'ломота', 'спазм', 'дискомфорт', 'напряжение', 'скука', 'раздражение', 'злость', 'нервы', 'тревога',
+      'усталость', 'изнеможение', 'опустошение', 'переутомление', 'выгорание', 'давление', 'тяжесть', 'износ', 'провал', 'крах',
+      'измотан', 'надлом', 'упадок', 'хандра', 'меланхолия', 'туман', 'заторможенность', 'отупение', 'истощение', 'бессилие',
+      'заёб', 'ебанулся', 'дохлый', 'вырубился', 'убился', 'накрыло', 'сдался', 'сломался', 'кончился', 'выжато',
+      'всё пиздец', 'пох на всё', 'ебать устал', 'жопа полная', 'сил нет'
+    ];
+    const positiveWords = [
+      'кайф', 'круто', 'заебись', 'ахуенно', 'похер', 'норм', 'четко', 'огонь', 'блеск', 'пушка',
+      'в кайф', 'весело', 'радость', 'драйв', 'энергия', 'бодро', 'жара', 'мощно', 'класс', 'шик',
+      'прикол', 'ржака', 'улёт', 'фан', 'движ', 'эпик', 'позитив', 'восторг', 'эйфория', 'лёгкость',
+      'релакс', 'спокойно', 'гармония', 'баланс', 'комфорт', 'удовольствие', 'наслаждение', 'вдохновение', 'мотивация', 'дзен',
+      'взлёт', 'кураж', 'флоу', 'азарт', 'воодушевление', 'ликование', 'триумф', 'счастье', 'экстаз', 'настроение',
+      'веселье', 'радостно', 'бодрость', 'живость', 'ясность', 'лёгкость', 'свобода', 'блаженство', 'праздник', 'жизнь',
+      'пох', 'зачёт', 'лёгкий', 'ништяк', 'кайфово', 'мощь', 'флекс', 'бери выше', 'похую', 'жёстко',
+      'всё ахуенно', 'похер всё', 'жизнь кайф', 'зашибись', 'пох на всех'
+    ];
+    const neutralWords = [
+      'нормально', 'обычно', 'пох', 'ничего', 'ровно', 'стабильно', 'тихо', 'спокойно', 'балдеж', 'пофиг',
+      'средне', 'проходит', 'идёт', 'жду', 'терпимо', 'привычно', 'как всегда', 'без изменений', 'всё ок', 'нормас',
+      'ровненько', 'плавно', 'стандарт', 'нейтрально', 'сносно', 'пойдёт', 'неплохо', 'стабиль', 'норм', 'жить можно',
+      'тишина', 'без разницы', 'не напрягает', 'всё ровно', 'без вопросов', 'идёт нормально', 'в порядке', 'без проблем', 'всё путём', 'ништяк',
+      'похер', 'ровный', 'спокуха', 'без движухи', 'по кайфу', 'типа норм', 'не парюсь', 'как есть', 'без пиздеца', 'чотко',
+      'всё пох', 'похер вообще', 'норм так', 'типа ок', 'без трындеца'
+    ];
+    const negativeWords = [
+      'злость', 'гнев', 'бешенство', 'раздражение', 'нервы', 'тилт', 'ярость', 'агрессия', 'фрустрация', 'досада',
+      'обида', 'зависть', 'ревность', 'страх', 'паника', 'тревога', 'беспокойство', 'смятение', 'растерянность', 'сомнение',
+      'стыд', 'вина', 'уныние', 'печаль', 'горе', 'разочарование', 'потеря', 'отчаяние', 'безнадёжность', 'одиночество',
+      'скука', 'тоска', 'хандра', 'мрак', 'угрюмость', 'подавленность', 'тягость', 'грусть', 'меланхолия', 'безысходность',
+      'напряг', 'похеризм', 'облом', 'беспонт', 'фуфло', 'швах', 'гемор', 'зассал', 'просрал', 'заеб',
+      'всё хуйня', 'похер всё', 'блять бесит', 'всё заебало', 'пох на всё'
+    ];
+    const questions = [
+      { id: 'q1', text: 'Сколько часов в день ты обычно играешь?', type: 'radio', options: [
+        { text: 'Меньше 1 часа', score: 0 }, { text: '1–2 часа', score: 2 }, { text: '3–4 часа', score: 5 }, { text: '5+ часов', score: 8 }
+      ]},
+      { id: 'q2', text: 'Чувствуешь ли ты усталость в глазах после игры?', type: 'radio', options: [
+        { text: 'Никогда', score: 0 }, { text: 'Иногда', score: 3 }, { text: 'Часто', score: 6 }
+      ]},
+      { id: 'q3', text: 'Как часто делаешь перерывы во время игры?', type: 'radio', options: [
+        { text: 'Каждый час', score: 0 }, { text: 'Каждые 2–3 часа', score: 3 }, { text: 'Редко или никогда', score: 6 }
+      ]},
+      { id: 'q4', text: 'Какие жанры игр ты любишь? (выбери все подходящие)', type: 'checkbox', options: [
+        { text: 'Шутеры (CS2, Call of Duty)', score: 2 }, { text: 'RPG (The Witcher, Elden Ring)', score: 1 },
+        { text: 'Стратегии (StarCraft, Civilization)', score: 1 }, { text: 'Казуальные (Stardew Valley)', score: 0 }
+      ]},
+      { id: 'q5', text: 'Как часто ты делаешь гимнастику для глаз?', type: 'radio', options: [
+        { text: 'Ежедневно', score: 0 }, { text: 'Раз в неделю', score: 3 }, { text: 'Никогда', score: 5 }
+      ]},
+      { id: 'q6', text: 'Насколько комфортно твоё игровое место? (0 — ужасно, 10 — идеально)', type: 'range', min: 0, max: 10, score: v => 10 - v },
+      { id: 'q7', text: 'Бываешь ли ты раздражён после проигрышей?', type: 'radio', options: [
+        { text: 'Никогда', score: 0 }, { text: 'Иногда', score: 3 }, { text: 'Часто', score: 5 }
+      ]},
+      { id: 'q8', text: 'Сколько воды ты пьёшь во время игры?', type: 'radio', options: [
+        { text: 'Пью регулярно', score: 0 }, { text: 'Иногда', score: 3 }, { text: 'Забываю', score: 5 }
+      ]},
+      { id: 'q9', text: 'Какие проблемы ты замечал после долгих игровых сессий?', type: 'checkbox', options: [
+        { text: 'Боль в спине', score: 3 }, { text: 'Усталость глаз', score: 3 }, { text: 'Головная боль', score: 3 }, { text: 'Ничего', score: 0 }
+      ]},
+      { id: 'q10', text: 'Как часто ты занимаешься спортом?', type: 'radio', options: [
+        { text: '3+ раза в неделю', score: 0 }, { text: '1–2 раза в неделю', score: 3 }, { text: 'Редко или никогда', score: 5 }
+      ]},
+      { id: 'q11', text: 'Оцени свой уровень стресса от игр (0 — чилл, 10 — тильт)', type: 'range', min: 0, max: 10, score: v => v },
+      { id: 'q12', text: 'Есть ли у тебя очки с антибликовым покрытием?', type: 'radio', options: [
+        { text: 'Да', score: 0 }, { text: 'Нет', score: 3 }
+      ]},
+      { id: 'q13', text: 'Как ты сидишь за компом?', type: 'radio', options: [
+        { text: 'Прямо, с поддержкой спины', score: 0 }, { text: 'Сгорбившись', score: 4 }, { text: 'Как попало', score: 6 }
+      ]},
+      { id: 'q14', text: 'Что ты ешь во время игры?', type: 'checkbox', options: [
+        { text: 'Чипсы/фастфуд', score: 3 }, { text: 'Фрукты/орехи', score: 0 }, { text: 'Ничего', score: 1 }
+      ]},
+      { id: 'q15', text: 'Опиши в двух словах свои ощущения после долгих игр (например, всё норм)', type: 'text', score: v => {
+        let cleanInput = v.toLowerCase().trim().replace(/[^A-Za-zА-Яа-я\s]/g, '');
+        const words = cleanInput.split(/\s+/).filter(w => w.length > 0);
+        if (words.length === 0) return 0;
+        if (words.some(w => fatigueWords.includes(w))) return 3;
+        if (words.some(w => negativeWords.includes(w))) return 2;
+        if (words.some(w => neutralWords.includes(w))) return 1;
+        if (words.some(w => positiveWords.includes(w))) return 0;
+        return 0;
+      }}
+    ];
+    const questionsContainer = document.getElementById('questions');
+    const confirmBtn = document.getElementById('confirm-answer');
+    const submitBtn = document.getElementById('submit-test');
+    const resultDiv = document.getElementById('result');
+    const progressBar = document.getElementById('progress-bar');
+    let currentQuestion = 0;
+    let answers = {};
+    function renderQuestion() {
+      questionsContainer.innerHTML = '';
+      const q = questions[currentQuestion];
+      const div = document.createElement('div');
+      div.className = 'question';
+      div.innerHTML = `<h4>${currentQuestion + 1}. ${q.text}</h4>`;
+      if (q.type === 'radio') {
+        q.options.forEach((opt, i) => {
+          div.innerHTML += `
+            <label><input type="radio" name="${q.id}" value="${i}" required> ${opt.text}</label>
+          `;
+        });
+      } else if (q.type === 'checkbox') {
+        q.options.forEach((opt, i) => {
+          div.innerHTML += `
+            <label><input type="checkbox" name="${q.id}" value="${i}"> ${opt.text}</label>
+          `;
+        });
+      } else if (q.type === 'range') {
+        div.innerHTML += `
+          <input type="range" id="${q.id}" name="${q.id}" min="${q.min}" max="${q.max}" value="5">
+          <span id="${q.id}-value">5</span>
+        `;
+      } else if (q.type === 'text') {
+        div.innerHTML += `
+          <input type="text" id="${q.id}" name="${q.id}" maxlength="50" placeholder="Например: всё норм">
+        `;
+      }
+      questionsContainer.appendChild(div);
+      if (q.type === 'range') {
+        const range = questionsContainer.querySelector(`input[name="${q.id}"]`);
+        const rangeValue = document.getElementById(`${q.id}-value`);
+        if (range && rangeValue) {
+          range.oninput = () => rangeValue.textContent = range.value;
+          range.onchange = () => answers[q.id] = parseInt(range.value);
+        }
+      }
+      confirmBtn.style.display = (q.type === 'checkbox' || q.type === 'range') && currentQuestion < questions.length - 1 ? 'block' : 'none';
+      submitBtn.style.display = currentQuestion === questions.length - 1 ? 'block' : 'none';
+      progressBar.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+    }
+    function validateTextInput(value) {
+      const words = value.trim().split(/\s+/).filter(w => w.length > 0);
+      if (words.length > 2) {
+        showNotification('Максимум два слова!');
+        return false;
+      }
+      return true;
+    }
+    function calculateScore() {
+      let score = 0;
+      questions.forEach((q, index) => {
+        if (q.type === 'radio') {
+          const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+          if (selected) score += q.options[parseInt(selected.value)].score;
+        } else if (q.type === 'checkbox') {
+          const checked = document.querySelectorAll(`input[name="${q.id}"]:checked`);
+          checked.forEach(c => {
+            score += q.options[parseInt(c.value)].score;
+          });
+        } else if (q.type === 'range') {
+          const input = answers[q.id];
+          if (input !== undefined) score += q.score(input);
+        } else if (q.type === 'text') {
+          const input = document.querySelector(`input[name="${q.id}"]`);
+          const value = input ? input.value : (answers[q.id] || '');
+          score += q.score(value);
+        }
+      });
+      return score;
+    }
+    function getResultMessage(score) {
+      if (score <= 20) {
+        return `Чилл-машина! 😎 Ты геймишь с умом, здоровье в порядке. Продолжай делать перерывы и следить за осанкой!`;
+      } else if (score <= 40) {
+        return `Норм, но есть куда расти! 😏 Игры — твой кайф, но добавь гимнастику для глаз и спорт. Пройди наш раздел "Советы"!`;
+      } else if (score <= 60) {
+        return `Бро, пора чилить! 😅 Игры тебя затягивают, и здоровье страдает. Делай перерывы и проверь раздел "Перерыв".`;
+      } else {
+        return `Тильт-алерт! 🚨 Ты геймер от бога, но здоровье в зоне риска. Срочно добавь спорт, перерывы и гимнастику для глаз!`;
+      }
+    }
+    renderQuestion();
+    questionsContainer.onclick = e => {
+      if (e.target.type === 'radio' && currentQuestion < questions.length - 1) {
+        answers[questions[currentQuestion].id] = parseInt(e.target.value);
+        setTimeout(() => {
+          currentQuestion++;
+          renderQuestion();
+        }, 300);
+      }
+    };
+    confirmBtn.onclick = () => {
+      const q = questions[currentQuestion];
+      if (q.type === 'checkbox') {
+        const checked = document.querySelectorAll(`input[name="${q.id}"]:checked`);
+        if (checked.length === 0) {
+          showNotification('Выбери хотя бы один вариант!');
+          return;
+        }
+        answers[q.id] = Array.from(checked).map(c => parseInt(c.value));
+      } else if (q.type === 'range') {
+        const input = document.querySelector(`input[name="${q.id}"]`);
+        if (input) answers[q.id] = parseInt(input.value);
+      }
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        renderQuestion();
+      } else {
+        submitBtn.style.display = 'block';
+        confirmBtn.style.display = 'none';
+      }
+    };
+    submitBtn.onclick = () => {
+      const q = questions[currentQuestion];
+      if (q.type === 'text') {
+        const input = document.querySelector(`input[name="${q.id}"]`);
+        const value = input ? input.value : '';
+        if (value && !validateTextInput(value)) return;
+        answers[q.id] = value;
+      }
+      const score = calculateScore();
+      const message = getResultMessage(score);
+      resultDiv.innerHTML = `<h3>Твой результат: ${score} баллов</h3><p>${message}</p>`;
+      resultDiv.style.display = 'block';
+      submitBtn.style.display = 'none';
+      confirmBtn.style.display = 'none';
+      if (user) {
+        user.results = user.results || [];
+        user.results.push(`Дата: ${new Date().toLocaleDateString()}, Риск: ${score}`);
+        localStorage.setItem('users', JSON.stringify(users));
+        showNotification('Результат теста сохранён в профиле!');
+      }
+    };
+  </script>
+</body>
+</html>

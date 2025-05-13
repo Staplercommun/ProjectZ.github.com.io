@@ -1,0 +1,136 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ST | Регистрация</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ddd;
+    }
+    header {
+      padding: 10px;
+      text-align: center;
+    }
+    .auth-container {
+      padding: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    input {
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+      max-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0;
+    }
+    .checkbox-container label {
+      margin: 0 10px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .checkbox-container input {
+      margin-right: 5px;
+    }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    body.light button {
+      background-color: #4caf50;
+      color: white;
+    }
+    body.light button:hover {
+      background-color: #45a049;
+    }
+    body.dark button {
+      background-color: #66bb6a;
+      color: #1a1a1a;
+    }
+    body.dark button:hover {
+      background-color: #5da962;
+    }
+    #reg-msg {
+      color: #ff4444;
+      margin-top: 10px;
+    }
+    .login-link {
+      display: block;
+      margin-top: 10px;
+      color: #4caf50;
+      text-decoration: none;
+    }
+    body.dark .login-link {
+      color: #66bb6a;
+    }
+    .login-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header><h1>ST | Регистрация</h1></header>
+  <div class="auth-container">
+    <h2>Регистрация</h2>
+    <input id="reg-nick" type="text" placeholder="Никнейм"><br>
+    <input id="reg-email" type="email" placeholder="E-mail"><br>
+    <input id="reg-pass" type="password" placeholder="Пароль"><br>
+    <div class="checkbox-container">
+      <label><input type="checkbox" id="consent"> Согласен на обработку данных</label>
+    </div>
+    <div class="button-group">
+      <button id="reg-btn">Зарегистрироваться</button>
+      <button id="cancel-btn">Назад</button>
+    </div>
+    <a href="login.html" class="login-link">Уже есть аккаунт? Войдите!</a>
+    <p id="reg-msg"></p>
+  </div>
+  <script>
+    document.querySelectorAll('#login-link, #register-link').forEach(el => el.style.display = 'none');
+    document.getElementById('reg-btn').onclick = () => {
+      const nickname = document.getElementById('reg-nick').value;
+      const email = document.getElementById('reg-email').value;
+      const pass = document.getElementById('reg-pass').value;
+      const consent = document.getElementById('consent').checked;
+      if (!consent) return document.getElementById('reg-msg').textContent = 'Нужно согласие';
+      let users = JSON.parse(localStorage.getItem('users') || '[]');
+      if (users.find(u => u.email === email || u.nickname === nickname)) return document.getElementById('reg-msg').textContent = 'Ник или почта заняты';
+      const code = Math.floor(100000 + Math.random() * 900000);
+      users.push({ nickname, email, pass, consent, confirmed: false, subscribed: false, breaks: 0, results: [] });
+      localStorage.setItem('users', JSON.stringify(users));
+      localStorage.setItem('pendingEmail', email);
+      localStorage.setItem('confirmCode_' + email, code);
+      alert('Код подтверждения отправлен на ' + email + '. Код: ' + code);
+      window.location = 'confirm.html';
+    };
+    document.getElementById('cancel-btn').onclick = () => location = '../index.html';
+  </script>
+</body>
+</html>

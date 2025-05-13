@@ -1,0 +1,366 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Игра для глаз</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ddd;
+    }
+    header {
+      padding: 10px;
+      text-align: center;
+    }
+    nav a {
+      margin: 0 10px;
+      color: inherit;
+      text-decoration: none;
+    }
+    .main-container {
+      padding: 20px;
+      text-align: center;
+    }
+    canvas {
+      border: 2px solid #6a1b9a;
+      margin-top: 1rem;
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+    body.dark canvas {
+      background-color: rgba(50, 50, 50, 0.9);
+    }
+    .game-ui {
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    body.light button {
+      background-color: #4caf50;
+      color: white;
+    }
+    body.light button:hover {
+      background-color: #45a049;
+    }
+    body.dark button {
+      background-color: #66bb6a;
+      color: #1a1a1a;
+    }
+    body.dark button:hover {
+      background-color: #5da962;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    body.dark .modal {
+      background-color: #333;
+      color: #ddd;
+    }
+    .notification-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+    }
+    .notification {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="level-modal" class="overlay">
+    <div class="modal level-modal">
+      <h2>Выберите уровень сложности</h2>
+      <button onclick="startGame('easy')">Лёгкий</button>
+      <button onclick="startGame('medium')">Средний</button>
+      <button onclick="startGame('hard')">Сложный</button>
+    </div>
+  </div>
+  <header>
+    <h1>Гимнастика для глаз</h1>
+    <div>
+      <button id="theme-toggle">Тёмная тема</button>
+      <nav>
+        <a href="../index.html">Главная</a>
+        <a href="info.html">Инфо</a>
+        <a href="advice.html">Советы</a>
+        <a href="test.html">Тест</a>
+        <a href="game.html">Игра</a>
+        <a href="infographic.html">Инфографика</a>
+        <a href="break.html">Перерыв</a>
+        <a href="profile.html" id="profile-link">Профиль</a>
+        <a href="login.html" id="login-link">Войти</a>
+        <a href="register.html" id="register-link">Регистрация</a>
+      </nav>
+    </div>
+  </header>
+  <div class="main-container" style="text-align:center;">
+    <canvas id="canvas"></canvas>
+    <div class="game-ui">
+      <p>Следите за кружком и кликайте! Осталось: <span id="timer">2:00</span></p>
+      <p>Очки: <span id="score">0</span> | Лучший: <span id="best-score">0</span> | Уровень: <span id="level">Лёгкий</span></p>
+      <button id="restart-btn" style="display:none;">Начать заново</button>
+    </div>
+  </div>
+  <div class="notification-container" id="notification-container"></div>
+  <footer>© 2025 ST. Все права защищены. Тахир</footer>
+  <script>
+    // Theme & Nav hide
+    const toggleT = document.getElementById('theme-toggle');
+    let ctheme = localStorage.getItem('theme') || 'light';
+    document.body.classList.add(ctheme);
+    toggleT.textContent = ctheme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    toggleT.onclick = () => {
+      ctheme = ctheme === 'light' ? 'dark' : 'light';
+      document.body.classList.remove('light', 'dark');
+      document.body.classList.add(ctheme);
+      localStorage.setItem('theme', ctheme);
+      toggleT.textContent = ctheme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    };
+    const currU = localStorage.getItem('currentUser');
+    if (currU) {
+      document.getElementById('login-link').style.display = 'none';
+      document.getElementById('register-link').style.display = 'none';
+    }
+    // Notification system
+    const adviceList = [
+      'Делайте перерывы каждый час игры для разминки и отдыха.',
+      'Выполняйте гимнастику для глаз: смотрите вдаль, делайте круговые движения.',
+      'Ограничьте время игры до 1–2 часов в день.',
+      'Настройте эргономику: монитор на уровне глаз, кресло с поддержкой спины.',
+      'Обеспечьте равномерное освещение без бликов.',
+      'Добавьте физическую активность: прогулки и упражнения укрепляют здоровье.'
+    ];
+    function showNotification(message) {
+      if (localStorage.getItem('notifications') === 'disabled') return;
+      const container = document.getElementById('notification-container');
+      const notif = document.createElement('div');
+      notif.className = 'notification';
+      notif.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()">✖</button>`;
+      container.appendChild(notif);
+      setTimeout(() => notif.remove(), 5000);
+    }
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.email === currU);
+    if (user && user.subscribed) {
+      setInterval(() => {
+        const randomAdvice = adviceList[Math.floor(Math.random() * adviceList.length)];
+        showNotification(`Совет: ${randomAdvice}`);
+      }, 60000);
+    }
+    setTimeout(() => showNotification('Новость: Скоро новый ивент!'), 5000);
+    setTimeout(() => showNotification('ЛС: Привет, как дела?'), 10000);
+    // Game logic
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let score = 0;
+    let bestScore = localStorage.getItem('bestScore') || 0;
+    let timeLeft = 120;
+    let gameActive = false;
+    let x, y, dx, dy, radius = 20, speed = 3, level = 'easy';
+    let bonusActive = false, bonusX, bonusY, gameCompleted = false;
+    document.getElementById('best-score').textContent = bestScore;
+    function resizeCanvas() {
+      canvas.width = Math.min(window.innerWidth - 40, 300);
+      canvas.height = canvas.width;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    const levelSound = new Audio('../audio/game.mp3');
+    const clickSound = new Audio('../audio/button.mp3');
+    const bonusSound = new Audio('../audio/coin.mp3');
+    function checkAchievements() {
+      if (!user) return;
+      if (!user.achievements) user.achievements = [];
+      const achievementsList = [
+        { id: 'newbie', name: 'Новичок', condition: () => gameCompleted },
+        { id: 'sharp_eye', name: 'Зоркий глаз', condition: () => score >= 50 },
+        { id: 'healthy', name: 'Здоровяк', condition: () => (user.breaks || 0) >= 10 },
+        { id: 'explorer', name: 'Исследователь', condition: () => (user.results?.length || 0) >= 3 },
+        { id: 'gold', name: 'Золото!', condition: () => user.achievements.includes('gold') }
+      ];
+      achievementsList.forEach(a => {
+        if (!user.achievements.includes(a.id) && a.condition()) {
+          user.achievements.push(a.id);
+          showNotification(`Достижение разблокировано: ${a.name}!`);
+        }
+      });
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+    function startGame(selectedLevel) {
+      levelSound.play();
+      level = selectedLevel;
+      speed = level === 'easy' ? 3 : level === 'medium' ? 5 : 7;
+      radius = level === 'easy' ? 20 : level === 'medium' ? 15 : 10;
+      document.getElementById('level').textContent = level === 'easy' ? 'Лёгкий' : level === 'medium' ? 'Средний' : 'Сложный';
+      document.getElementById('level-modal').style.display = 'none';
+      score = 0;
+      timeLeft = 120;
+      gameActive = true;
+      gameCompleted = false;
+      document.getElementById('score').textContent = '0';
+      document.getElementById('timer').textContent = '2:00';
+      document.getElementById('restart-btn').style.display = 'none';
+      x = radius + Math.random() * (canvas.width - 2 * radius);
+      y = radius + Math.random() * (canvas.height - 2 * radius);
+      dx = speed * (Math.random() < 0.5 ? 1 : -1);
+      dy = speed * (Math.random() < 0.5 ? 1 : -1);
+      if (user) {
+        user.gameCount = (user.gameCount || 0) + 1;
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+      const startTime = Date.now();
+      const timeInterval = setInterval(() => {
+        if (!gameActive) {
+          clearInterval(timeInterval);
+          return;
+        }
+        if (user) {
+          user.gameTime = (user.gameTime || 0) + 1;
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+      }, 1000);
+    }
+    document.getElementById('level-modal').style.display = 'flex';
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'red';
+      ctx.fill();
+      if (bonusActive) {
+        ctx.beginPath();
+        ctx.arc(bonusX, bonusY, 10, 0, Math.PI * 2);
+        ctx.fillStyle = 'gold';
+        ctx.fill();
+      }
+      if (gameActive) {
+        if (x + dx > canvas.width - radius || x + dx < radius) dx = -dx;
+        if (y + dy > canvas.height - radius || y + dy < radius) dy = -dy;
+        x += dx;
+        y += dy;
+        if (bonusActive) {
+          if (bonusX + dx > canvas.width - 10 || bonusX + dx < 10) dx = -dx;
+          if (bonusY + dy > canvas.height - 10 || bonusY + dy < 10) dy = -dy;
+          bonusX += dx / 2;
+          bonusY += dy / 2;
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+    canvas.onclick = e => {
+      if (!gameActive) return;
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      if (Math.sqrt((clickX - x) ** 2 + (clickY - y) ** 2) < radius) {
+        score++;
+        clickSound.play();
+        document.getElementById('score').textContent = score;
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('bestScore', bestScore);
+          document.getElementById('best-score').textContent = bestScore;
+        }
+        if (user) {
+          user.breaks = (user.breaks || 0) + 1;
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+        x = radius + Math.random() * (canvas.width - 2 * radius);
+        y = radius + Math.random() * (canvas.height - 2 * radius);
+        checkAchievements();
+      }
+      if (bonusActive && Math.sqrt((clickX - bonusX) ** 2 + (clickY - bonusY) ** 2) < 10) {
+        score += 5;
+        bonusSound.play();
+        document.getElementById('score').textContent = score;
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('bestScore', bestScore);
+          document.getElementById('best-score').textContent = bestScore;
+        }
+        if (user && !user.achievements.includes('gold')) {
+          user.achievements.push('gold');
+          showNotification('Достижение разблокировано: Золото!');
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+        bonusActive = false;
+        checkAchievements();
+      }
+    };
+    setInterval(() => {
+      if (gameActive && Math.random() < 0.1) {
+        bonusActive = true;
+        bonusX = 10 + Math.random() * (canvas.width - 20);
+        bonusY = 10 + Math.random() * (canvas.height - 20);
+        setTimeout(() => { bonusActive = false; }, 3000);
+      }
+    }, 5000);
+    const timerInterval = setInterval(() => {
+      if (!gameActive) return;
+      timeLeft--;
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      document.getElementById('timer').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      if (timeLeft <= 0) {
+        gameActive = false;
+        gameCompleted = true;
+        clearInterval(timerInterval);
+        alert(`Игра окончена! Ваш счёт: ${score}`);
+        document.getElementById('restart-btn').style.display = 'block';
+        checkAchievements();
+      }
+    }, 1000);
+    document.getElementById('restart-btn').onclick = () => {
+      document.getElementById('level-modal').style.display = 'flex';
+    };
+
+    // Проверка авторизации
+    const curr = localStorage.getItem('currentUser');
+    if (!curr) {
+      location = 'login.html';
+    } else {
+      document.getElementById('login-link').style.display = 'none';
+      document.getElementById('register-link').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

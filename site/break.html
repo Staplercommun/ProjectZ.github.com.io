@@ -1,0 +1,354 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Перерыв</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    body.light {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ddd;
+    }
+    video#bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      opacity: 0.8;
+    }
+    header {
+      padding: 10px;
+      text-align: center;
+    }
+    nav a {
+      margin: 0 10px;
+      color: inherit;
+      text-decoration: none;
+    }
+    .main-container {
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .timer-container {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: inline-block;
+    }
+    body.dark .timer-container {
+      background-color: rgba(50, 50, 50, 0.9);
+    }
+    #timer-display {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    #timer-input {
+      padding: 5px;
+      margin-right: 10px;
+      width: 100px;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    body.light button {
+      background-color: #4caf50;
+      color: white;
+    }
+    body.light button:hover {
+      background-color: #45a049;
+    }
+    body.dark button {
+      background-color: #66bb6a;
+      color: #1a1a1a;
+    }
+    body.dark button:hover {
+      background-color: #5da962;
+    }
+    .music-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    body.dark .music-panel {
+      background-color: rgba(50, 50, 50, 0.9);
+    }
+    .music-panel button {
+      padding: 8px;
+      width: 100%;
+      text-align: left;
+    }
+    .music-panel button.active {
+      background-color: #2196f3;
+      color: white;
+    }
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #volume-slider {
+      width: 100px;
+    }
+    .notification-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+    }
+    .notification {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <video id="bg-video" autoplay loop muted>
+    <source src="../Calm nature.mp4" type="video/mp4">
+    Ваш браузер не поддерживает видео.
+  </video>
+  <header>
+    <h1>Перерыв</h1>
+    <div>
+      <button id="theme-toggle">Тёмная тема</button>
+      <nav>
+        <a href="../index.html">Главная</a>
+        <a href="info.html">Инфо</a>
+        <a href="advice.html">Советы</a>
+        <a href="test.html">Тест</a>
+        <a href="game.html">Игра</a>
+        <a href="infographic.html">Инфографика</a>
+        <a href="break.html">Перерыв</a>
+        <a href="profile.html" id="profile-link">Профиль</a>
+        <a href="login.html" id="login-link">Войти</a>
+        <a href="register.html" id="register-link">Регистрация</a>
+      </nav>
+    </div>
+  </header>
+  <main class="main-container">
+    <h2>Сделай перерыв и расслабься!</h2>
+    <p>Настрой таймер, включи музыку и отдохни.</p>
+    <div class="timer-container">
+      <div id="timer-display">00:00</div>
+      <input type="number" id="timer-input" min="1" placeholder="Минуты">
+      <button id="start-timer">Старт</button>
+      <button id="reset-timer">Сбросить</button>
+    </div>
+  </main>
+  <div class="music-panel">
+    <button id="music-none" class="music-btn active">Без музыки</button>
+    <button id="music-nature" class="music-btn">Nature</button>
+    <button id="music-zen" class="music-btn">Zen</button>
+    <button id="music-break1" class="music-btn">Break1</button>
+    <div class="volume-control">
+      <span>Громкость:</span>
+      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+    </div>
+  </div>
+  <div class="notification-container" id="notification-container"></div>
+  <footer style="position: fixed; bottom: 10px; width: 100%; text-align: center;">
+    © 2025 ST. Все права защищены. Тахир
+  </footer>
+  <script>
+    // Theme & Nav
+    const toggle = document.getElementById('theme-toggle');
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    document.body.classList.add(currentTheme);
+    toggle.textContent = currentTheme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    toggle.onclick = () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.body.classList.remove('light', 'dark');
+      document.body.classList.add(currentTheme);
+      localStorage.setItem('theme', currentTheme);
+      toggle.textContent = currentTheme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    };
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      document.getElementById('login-link').style.display = 'none';
+      document.getElementById('register-link').style.display = 'none';
+    }
+    // Notification system
+    function showNotification(message) {
+      if (localStorage.getItem('notifications') === 'disabled') return;
+      const container = document.getElementById('notification-container');
+      const notif = document.createElement('div');
+      notif.className = 'notification';
+      notif.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()">✖</button>`;
+      container.appendChild(notif);
+      setTimeout(() => notif.remove(), 5000);
+	};
+
+    // Проверка авторизации
+    const curr = localStorage.getItem('currentUser');
+    if (!curr) {
+      location = 'login.html';
+    } else {
+      document.getElementById('login-link').style.display = 'none';
+      document.getElementById('register-link').style.display = 'none';
+    }
+    // Music Player
+    const tracks = {
+      none: null,
+      nature: new Audio('../audio/nature.mp3'),
+      zen: new Audio('../audio/zen.mp3'),
+      break1: new Audio('../audio/break1.mp3')
+    };
+    let currentTrack = 'none';
+    const musicButtons = document.querySelectorAll('.music-btn');
+    const volumeSlider = document.getElementById('volume-slider');
+    function fadeInAudio(audio, duration) {
+      audio.volume = 0;
+      audio.play();
+      const steps = 60;
+      const stepDuration = duration / steps;
+      const volumeStep = parseFloat(volumeSlider.value) / steps;
+      let currentStep = 0;
+      const fadeInterval = setInterval(() => {
+        if (currentStep >= steps) {
+          clearInterval(fadeInterval);
+          audio.volume = parseFloat(volumeSlider.value);
+          return;
+        }
+        audio.volume = Math.min(audio.volume + volumeStep, parseFloat(volumeSlider.value));
+        currentStep++;
+      }, stepDuration);
+    }
+    function playTrack(trackName) {
+      if (currentTrack === trackName) return;
+      Object.keys(tracks).forEach(key => {
+        if (tracks[key]) {
+          tracks[key].pause();
+          tracks[key].currentTime = 0;
+          tracks[key].volume = 0;
+        }
+      });
+      musicButtons.forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`music-${trackName}`).classList.add('active');
+      currentTrack = trackName;
+      if (trackName !== 'none') {
+        const audio = tracks[trackName];
+        audio.loop = true;
+        fadeInAudio(audio, 3000);
+      }
+    }
+    musicButtons.forEach(btn => {
+      btn.onclick = () => playTrack(btn.id.split('music-')[1]);
+    });
+    volumeSlider.oninput = () => {
+      if (currentTrack !== 'none') {
+        tracks[currentTrack].volume = parseFloat(volumeSlider.value);
+      }
+    };
+    // Timer Logic
+    const timerDisplay = document.getElementById('timer-display');
+    const timerInput = document.getElementById('timer-input');
+    const startBtn = document.getElementById('start-timer');
+    const resetBtn = document.getElementById('reset-timer');
+    let timerInterval = null;
+    let totalSeconds = 0;
+    let elapsedSeconds = 0;
+    let isRunning = false;
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const secs = (seconds % 60).toString().padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+    function saveBreakTime() {
+      const breakTime = elapsedSeconds;
+      if (currentUser) {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const user = users.find(u => u.email === currentUser);
+        if (user) {
+          user.breaks = (user.breaks || 0) + breakTime;
+          localStorage.setItem('users', JSON.stringify(users));
+          console.log(`Saved break time ${breakTime} for user ${currentUser}`);
+          showNotification(`Время перерыва (${formatTime(breakTime)}) сохранено в профиле!`);
+        }
+      }
+      let stats = JSON.parse(localStorage.getItem('stats') || '{}');
+      stats.totalBreakTime = (stats.totalBreakTime || 0) + breakTime;
+      localStorage.setItem('stats', JSON.stringify(stats));
+      console.log(`Updated total break time: ${stats.totalBreakTime}`);
+    }
+    function updateTimer() {
+      if (totalSeconds <= 0) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        startBtn.textContent = 'Старт';
+        saveBreakTime();
+        showNotification('Перерыв завершён!');
+        return;
+      }
+      totalSeconds--;
+      elapsedSeconds++;
+      timerDisplay.textContent = formatTime(totalSeconds);
+    }
+    startBtn.onclick = () => {
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        startBtn.textContent = 'Старт';
+        return;
+      }
+      const inputMinutes = parseInt(timerInput.value) || 0;
+      if (inputMinutes <= 0) {
+        showNotification('Введите время больше 0 минут!');
+        return;
+      }
+      totalSeconds = inputMinutes * 60;
+      elapsedSeconds = 0;
+      timerDisplay.textContent = formatTime(totalSeconds);
+      timerInterval = setInterval(updateTimer, 1000);
+      isRunning = true;
+      startBtn.textContent = 'Пауза';
+    };
+    resetBtn.onclick = () => {
+      if (isRunning || elapsedSeconds > 0) {
+        saveBreakTime();
+      }
+      clearInterval(timerInterval);
+      isRunning = false;
+      totalSeconds = 0;
+      elapsedSeconds = 0;
+      timerDisplay.textContent = '00:00';
+      timerInput.value = '';
+      startBtn.textContent = 'Старт';
+      showNotification('Таймер сброшен!');
+    };
+  </script>
+</body>
+</html>

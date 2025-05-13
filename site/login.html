@@ -1,0 +1,125 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вход</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ddd;
+    }
+    header {
+      padding: 10px;
+      text-align: center;
+    }
+    .auth-container {
+      padding: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    input {
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+      max-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    body.light button {
+      background-color: #4caf50;
+      color: white;
+    }
+    body.light button:hover {
+      background-color: #45a049;
+    }
+    body.dark button {
+      background-color: #66bb6a;
+      color: #1a1a1a;
+    }
+    body.dark button:hover {
+      background-color: #5da962;
+    }
+    .captcha-container {
+      margin: 10px 0;
+    }
+    #login-msg {
+      color: #ff4444;
+      margin-top: 10px;
+    }
+    .register-link {
+      display: block;
+      margin-top: 10px;
+      color: #4caf50;
+      text-decoration: none;
+    }
+    body.dark .register-link {
+      color: #66bb6a;
+    }
+    .register-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ST | Вход</h1>
+  </header>
+  <div class="auth-container">
+    <h2>Вход</h2>
+    <input id="login-user" type="text" placeholder="E-mail или ник"><br>
+    <input id="login-pass" type="password" placeholder="Пароль"><br>
+    <div class="captcha-container">
+      <p>Если вы входите по нику, решите капчу:</p>
+      <p id="captcha-question"></p>
+      <input id="captcha-answer" type="text" placeholder="Ответ"><br>
+    </div>
+    <button id="login-btn">Войти</button>
+    <button id="cancel-btn">Назад</button>
+    <a href="register.html" class="register-link">Нет аккаунта? Зарегистрируйтесь!</a>
+    <p id="login-msg"></p>
+  </div>
+  <script>
+    // Nav hide
+    document.querySelectorAll('#login-link, #register-link').forEach(el => el.style.display = 'none');
+    // Captcha setup
+    const a = Math.floor(Math.random() * 10), b = Math.floor(Math.random() * 10);
+    const expected = a + b;
+    document.getElementById('captcha-question').textContent = `${a} + ${b} = ?`;
+    // Login logic
+    document.getElementById('login-btn').onclick = () => {
+      const u = document.getElementById('login-user').value;
+      const p = document.getElementById('login-pass').value;
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(x => (x.email === u || x.nickname === u) && x.pass === p);
+      if (!user) return document.getElementById('login-msg').textContent = 'Неверные данные';
+      if (!user.confirmed) return document.getElementById('login-msg').textContent = 'Почта не подтверждена';
+      if (!u.includes('@')) {
+        const ans = +document.getElementById('captcha-answer').value;
+        if (ans !== expected) return document.getElementById('login-msg').textContent = 'Неправильный ответ на капчу';
+      }
+      localStorage.setItem('currentUser', user.email);
+      location = '../index.html';
+    };
+    document.getElementById('cancel-btn').onclick = () => location = '../index.html';
+  </script>
+</body>
+</html>
